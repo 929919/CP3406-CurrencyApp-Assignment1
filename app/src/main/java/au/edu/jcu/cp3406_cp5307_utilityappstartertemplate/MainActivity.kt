@@ -124,16 +124,19 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val allCurrencies = listOf("USD", "BRL", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "INR")
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text("Settings", style = MaterialTheme.typography.headlineMedium)
-        Text("Base Currency", style = MaterialTheme.typography.titleMedium)
+        item {
+            Text("Settings", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Base Currency", style = MaterialTheme.typography.titleMedium)
+        }
 
-        allCurrencies.forEach { currency ->
+        items(allCurrencies) { currency ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -146,10 +149,14 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
             }
         }
 
-        HorizontalDivider()
-        Text("Favorite Currencies", style = MaterialTheme.typography.titleMedium)
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Favorite Currencies", style = MaterialTheme.typography.titleMedium)
+        }
 
-        allCurrencies.forEach { currency ->
+        items(allCurrencies) { currency ->
             val isChecked = currency in uiState.favoriteCurrencies
             Row(
                 verticalAlignment = Alignment.CenterVertically,
