@@ -103,7 +103,9 @@ fun UtilityScreen(viewModel: CurrencyViewModel) {
                     val converted = rate?.let { "%.2f".format(amount * it) } ?: "--"
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
