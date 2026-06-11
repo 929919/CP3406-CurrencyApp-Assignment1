@@ -59,3 +59,36 @@ This app follows modern Android architecture best practices:
 | `CurrencyViewModel.kt` | `ui/viewmodel/` | Manages UI state with StateFlow |
 | `MainActivity.kt` | root | UtilityScreen and SettingsScreen UI |
 | `Color.kt / Theme.kt` | `ui/theme/` | Material Design 3 theming |
+
+---
+
+## API Used
+- **ExchangeRate-API** (https://www.exchangerate-api.com/)
+- Free tier: 1,500 requests/month
+- Endpoint: `GET /v6/{apiKey}/latest/{baseCurrency}`
+
+---
+
+## Tech Stack
+| Technology | Purpose |
+|---|---|
+| Kotlin | Primary language |
+| Jetpack Compose | UI framework |
+| Material Design 3 | Design system |
+| Retrofit 2 | Network requests |
+| Gson Converter | JSON parsing |
+| Kotlin Coroutines | Async operations |
+| ViewModel + StateFlow | State management |
+
+---
+
+## How to Run
+1. Clone this repository
+2. Open in Android Studio
+3. Add your ExchangeRate-API key in `CurrencyRepository.kt`
+4. Run on an emulator or physical device (API 24+)
+
+---
+
+## Development Progress
+All development tracked via Git commits. See commit history for weekly progress.
