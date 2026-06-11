@@ -6,6 +6,17 @@ import au.edu.jcu.cp3406_cp5307_utilityappstartertemplate.data.repository.Curren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+data class ConversionHistory(
+    val from: String,
+    val to: String,
+    val amount: Double,
+    val result: Double,
+    val timestamp: String
+)
 
 data class CurrencyUiState(
     val isLoading: Boolean = false,
@@ -14,7 +25,8 @@ data class CurrencyUiState(
     val rates: Map<String, Double> = emptyMap(),
     val favoriteCurrencies: List<String> = listOf("BRL", "EUR", "GBP", "JPY", "AUD"),
     val errorMessage: String? = null,
-    val isDarkMode: Boolean = false
+    val isDarkMode: Boolean = false,
+    val history: List<ConversionHistory> = emptyList()
 )
 
 class CurrencyViewModel : ViewModel() {
@@ -40,7 +52,7 @@ class CurrencyViewModel : ViewModel() {
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Erro ao buscar taxas. Verifique sua conexão."
+                    errorMessage = "Error fetching rates. Check your connection."
                 )
             }
         }
@@ -61,5 +73,23 @@ class CurrencyViewModel : ViewModel() {
 
     fun onDarkModeToggle(enabled: Boolean) {
         _uiState.value = _uiState.value.copy(isDarkMode = enabled)
+    }
+
+    fun addToHistory(to: String, result: Double) {
+        val amount = _uiState.value.amount.toDoubleOrNull() ?: 1.0
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val entry = ConversionHistory(
+            from = _uiState.value.baseCurrency,
+            to = to,
+            amount = amount,
+            result = result,
+            timestamp = formatter.format(Date())
+        )
+        val updated = listOf(entry) + _uiState.value.history
+        _uiState.value = _uiState.value.copy(history = updated.take(20))
+    }
+
+    fun clearHistory() {
+        _uiState.value = _uiState.value.copy(history = emptyList())
     }
 }

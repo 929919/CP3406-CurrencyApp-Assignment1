@@ -11,7 +11,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -83,7 +85,7 @@ fun UtilityApp() {
             bottomBar = {
                 NavigationBar {
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Utility") },
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Converter") },
                         label = { Text("Converter") },
                         selected = selectedTab == "Utility",
                         onClick = { selectedTab = "Utility" }
@@ -111,36 +113,79 @@ fun UtilityApp() {
 fun UtilityScreen(viewModel: CurrencyViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val amount = uiState.amount.toDoubleOrNull() ?: 1.0
+    var searchQuery by remember { mutableStateOf("") }
 
-    Column(
+    val filteredCurrencies = uiState.favoriteCurrencies.filter {
+        it.contains(searchQuery.uppercase())
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Currency Converter", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        item {
+            Text(
+                "Currency Converter",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
 
-        OutlinedTextField(
-            value = uiState.amount,
-            onValueChange = { viewModel.onAmountChange(it) },
-            label = { Text("Amount (${uiState.baseCurrency})") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search currency...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedTextField(
+                value = uiState.amount,
+                onValueChange = { viewModel.onAmountChange(it) },
+                label = { Text("Amount (${uiState.baseCurrency})") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
 
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            item {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
         } else if (uiState.errorMessage != null) {
-            Text(uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
-            Button(onClick = { viewModel.fetchRates() }) {
-                Text("Try Again")
+            item {
+                Text(uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
+                Button(onClick = { viewModel.fetchRates() }) {
+                    Text("Try Again")
+                }
             }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(uiState.favoriteCurrencies) { currency ->
+            if (filteredCurrencies.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "No currencies found for \"$searchQuery\"",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                items(filteredCurrencies) { currency ->
                     val rate = uiState.rates[currency]
                     val converted = rate?.let { "%.2f".format(amount * it) } ?: "--"
                     val cardColor = currencyColors[currency] ?: Color(0xFF455A64)
@@ -179,6 +224,11 @@ fun UtilityScreen(viewModel: CurrencyViewModel) {
 @Composable
 fun SettingsScreen(viewModel: CurrencyViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredCurrencies = allAvailableCurrencies.filter {
+        it.contains(searchQuery.uppercase())
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -187,10 +237,13 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
-            Text("Settings", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Dark Mode Toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -211,9 +264,22 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
             Text("Base Currency", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search currency...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(4.dp))
         }
-        items(allAvailableCurrencies) { currency ->
+
+        items(filteredCurrencies) { currency ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -246,7 +312,7 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        items(allAvailableCurrencies) { currency ->
+        items(filteredCurrencies) { currency ->
             val isChecked = currency in uiState.favoriteCurrencies
             Row(
                 verticalAlignment = Alignment.CenterVertically,
