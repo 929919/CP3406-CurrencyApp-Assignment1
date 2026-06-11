@@ -13,7 +13,8 @@ data class CurrencyUiState(
     val amount: String = "1",
     val rates: Map<String, Double> = emptyMap(),
     val favoriteCurrencies: List<String> = listOf("BRL", "EUR", "GBP", "JPY", "AUD"),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isDarkMode: Boolean = false
 )
 
 class CurrencyViewModel : ViewModel() {
@@ -56,5 +57,9 @@ class CurrencyViewModel : ViewModel() {
 
     fun onFavoriteCurrenciesChange(newFavorites: List<String>) {
         _uiState.value = _uiState.value.copy(favoriteCurrencies = newFavorites)
+    }
+
+    fun onDarkModeToggle(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(isDarkMode = enabled)
     }
 }

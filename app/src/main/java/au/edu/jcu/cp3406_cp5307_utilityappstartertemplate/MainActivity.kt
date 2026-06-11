@@ -75,30 +75,33 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UtilityApp() {
     val viewModel: CurrencyViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf("Utility") }
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Utility") },
-                    label = { Text("Converter") },
-                    selected = selectedTab == "Utility",
-                    onClick = { selectedTab = "Utility" }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
-                    selected = selectedTab == "Settings",
-                    onClick = { selectedTab = "Settings" }
-                )
+    CP3406_CP5603UtilityAppStarterTemplateTheme(darkTheme = uiState.isDarkMode) {
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Utility") },
+                        label = { Text("Converter") },
+                        selected = selectedTab == "Utility",
+                        onClick = { selectedTab = "Utility" }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") },
+                        selected = selectedTab == "Settings",
+                        onClick = { selectedTab = "Settings" }
+                    )
+                }
             }
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedTab) {
-                "Utility" -> UtilityScreen(viewModel)
-                "Settings" -> SettingsScreen(viewModel)
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                when (selectedTab) {
+                    "Utility" -> UtilityScreen(viewModel)
+                    "Settings" -> SettingsScreen(viewModel)
+                }
             }
         }
     }
@@ -186,9 +189,30 @@ fun SettingsScreen(viewModel: CurrencyViewModel) {
         item {
             Text("Settings", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Dark Mode Toggle
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Dark Mode", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        if (uiState.isDarkMode) "Dark theme enabled" else "Light theme enabled",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = uiState.isDarkMode,
+                    onCheckedChange = { viewModel.onDarkModeToggle(it) }
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             Text("Base Currency", style = MaterialTheme.typography.titleMedium)
         }
-
         items(allAvailableCurrencies) { currency ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
